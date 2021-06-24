@@ -13,12 +13,14 @@ const getUploadUrl = async function(event) {
     const params = {
         Bucket: process.env.UploadBucket,
         Key,
-        Expires: 300,
-        ContentType: 'image/jpg'
+        Expires: 3000,
+        ContentType: 'image/jpg',
+        ACL: 'public-read-write'
     };
     console.log('Params: ', params);
     const uploadUrl = await s3.getSignedUrlPromise('putObject', params);
 
+    const imageURL = `https://${process.env.UploadBucket}.s3.${process.env.AwsRegion}.amazonaws.com/${Key}`;
     const response = {
         statusCode: 200,
         headers: {
@@ -27,6 +29,7 @@ const getUploadUrl = async function(event) {
         body: JSON.stringify({
             uploadURL: uploadUrl,
             Key,
+            imageURL: imageURL
         })
     };
 

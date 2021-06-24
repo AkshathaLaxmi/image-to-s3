@@ -27,6 +27,7 @@ Resources:
       Environment:
         Variables:
           UploadBucket: !Ref S3UploadBucket
+          AwsRegion: !Ref AWS::Region
       Policies:
       - S3WritePolicy:
           BucketName: !Ref S3UploadBucket

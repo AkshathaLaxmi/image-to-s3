@@ -7,7 +7,7 @@
   </head>
   <body>
     <div id="app">
-      <h1>S3 Uploader Test</h1>
+      <h1>S3 Uploader</h1>
   
       <div v-if="!image">
         <h2>Select an image</h2>
@@ -18,7 +18,7 @@
         <button v-if="!uploadURL" @click="removeImage">Remove image</button>
         <button v-if="!uploadURL" @click="uploadImage">Upload image</button>
       </div>
-      <h2 v-if="uploadURL">Success! Image uploaded to bucket.</h2>
+      <h4 v-if="uploadURL">Success! Image uploaded to bucket at <br>{{uploadURL}}<br></h4>
     </div>
   
     <script>
@@ -75,13 +75,14 @@
             }
             let blobData = new Blob([new Uint8Array(array)], {type: 'image/jpeg'})
             console.log('Uploading to: ', response.uploadURL)
+            console.log('Image will be at: ', response.imageURL)
             const result = await fetch(response.uploadURL, {
               method: 'PUT',
               body: blobData
             })
             console.log('Result: ', result)
             // Final URL for the user doesn't need the query string params
-            this.uploadURL = response.uploadURL.split('?')[0]
+            this.uploadURL = response.imageURL.split('?')[0]
           }
         }
       })
