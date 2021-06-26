@@ -4,7 +4,6 @@ Description: >
   image-to-s3
   Upload an image and get link for it!
   
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 3
@@ -26,11 +25,19 @@ Resources:
       Runtime: nodejs14.x
       Environment:
         Variables:
-          UploadBucket: !Ref S3UploadBucket
+          UploadBucket: !Ref S3PlainUploadBucket
           AwsRegion: !Ref AWS::Region
       Policies:
-      - S3WritePolicy:
-          BucketName: !Ref S3UploadBucket
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: 
+                - s3:PutObject
+                - s3:PutObjectAcl
+                - s3:PutLifecycleConfiguration
+              Resource: 
+                - !Sub "arn:aws:s3:::${AWS::StackName}-${AWS::Region}-plain-upload-bucket"
+                - !Sub "arn:aws:s3:::${AWS::StackName}-${AWS::Region}-plain-upload-bucket/*"
       Events:
         UploadAssetAPI:
           Type: Api
@@ -38,9 +45,113 @@ Resources:
             Path: /upload
             Method: get
             RestApiId: !Ref UploadAPI
+  ResizeRequestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: resizeRequest/
+      Handler: geturl.geturl
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          UploadBucket: !Sub "${AWS::StackName}-${AWS::Region}-upload-bucket"
+          ResizeBucket: !Sub "${AWS::StackName}-${AWS::Region}-resize-bucket"
+          AwsRegion: !Ref AWS::Region
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:PutObjectAcl
+                - s3:PutLifecycleConfiguration
+              Resource: 
+                - !Sub "arn:aws:s3:::${AWS::StackName}-${AWS::Region}-upload-bucket"
+                - !Sub "arn:aws:s3:::${AWS::StackName}-${AWS::Region}-upload-bucket/*"
+      Events:
+        ResizeAssetAPI:
+          Type: Api
+          Properties:
+            Path: /resize/{dims}
+            Method: get
+            RestApiId: !Ref UploadAPI
+  ResizeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: resizeImage/
+      Handler: resize.resize
+      Runtime: nodejs14.x
+      Layers:
+        - !Ref ResizeFuncDepLayer
+      Environment:
+        Variables:
+          ResizeBucket: !Sub "${AWS::StackName}-${AWS::Region}-resize-bucket"
+          AwsRegion: !Ref AWS::Region
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: 
+                - s3:PutObject
+                - s3:PutObjectAcl
+                - s3:PutLifecycleConfiguration
+              Resource: 
+                - !Sub "arn:aws:s3:::${AWS::StackName}-${AWS::Region}-resize-bucket"
+                - !Sub "arn:aws:s3:::${AWS::StackName}-${AWS::Region}-resize-bucket/*"
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:ListBucket
+                - s3:GetBucketLocation
+                - s3:GetObjectVersion
+                - s3:GetLifecycleConfiguration
+              Resource:
+                - !Sub "arn:aws:s3:::${AWS::StackName}-${AWS::Region}-upload-bucket"
+                - !Sub "arn:aws:s3:::${AWS::StackName}-${AWS::Region}-upload-bucket/*"
+      Events:
+        ResizeAssetS3:
+          Type: S3
+          Properties:
+            Bucket: !Ref S3UploadBucket
+            Events: s3:ObjectCreated:*
+  ResizeFuncDepLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: image-to-s3-dependencies
+      Description: That stupid sharp module
+      ContentUri: dependencies/
+      RetentionPolicy: Retain
+  S3PlainUploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-${AWS::Region}-plain-upload-bucket"
+      CorsConfiguration:
+        CorsRules:
+        - AllowedHeaders:
+          - '*'
+          AllowedMethods:
+          - GET
+          - PUT
+          - HEAD
+          AllowedOrigins:
+          - '*'
   S3UploadBucket:
     Type: AWS::S3::Bucket
     Properties:
+      BucketName: !Sub "${AWS::StackName}-${AWS::Region}-upload-bucket"
+      CorsConfiguration:
+        CorsRules:
+        - AllowedHeaders:
+          - '*'
+          AllowedMethods:
+          - GET
+          - PUT
+          - HEAD
+          AllowedOrigins:
+          - '*'
+  S3ResizeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-${AWS::Region}-resize-bucket"
       CorsConfiguration:
         CorsRules:
         - AllowedHeaders:
@@ -55,6 +166,12 @@ Outputs:
   APIendpoint:
     Description: "HTTP API endpoint URL"
     Value: !Sub https://${UploadAPI}.execute-api.${AWS::Region}.amazonaws.com
-  S3UploadBucketName:
+  S3PlainUploadBucketName:
     Description: "S3 bucket used for uploads"
+    Value: !Ref S3PlainUploadBucket
+  S3UploadBucketName:
+    Description: "S3 bucket used for uploads in resizing"
     Value: !Ref S3UploadBucket
+  S3ResizeBucketName:
+    Description: "S3 bucket used for resizing"
+    Value: !Ref S3ResizeBucket

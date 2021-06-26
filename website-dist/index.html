@@ -20,13 +20,16 @@
       </div>
       <h4 v-if="uploadURL">Success! Image uploaded to bucket at <br>{{uploadURL}}<br></h4>
     </div>
-  
+
+    <div id="change_res">
+      <h1><a href="change.html">Resolution changer</a></h1>
+    </div>
     <script>
-      const MAX_IMAGE_SIZE = 1000000
+      const MAX_IMAGE_SIZE = 10000000
 
       /* ENTER YOUR ENDPOINT HERE */
 
-      const API_ENDPOINT = 'https://yecw6ook74.execute-api.us-east-2.amazonaws.com/default/upload' // e.g. https://ab1234ab123.execute-api.us-east-1.amazonaws.com/uploads
+      const API_ENDPOINT = 'https://59ptvvm997.execute-api.us-east-2.amazonaws.com/default/upload' // e.g. https://ab1234ab123.execute-api.us-east-1.amazonaws.com/uploads
 
       new Vue({
         el: "#app",
@@ -89,12 +92,18 @@
     </script>
     <style type="text/css">
       body {
-        background: #20262E;
+        background: #152336;
         padding: 20px;
         font-family: sans-serif;
       }
       #app {
         background: #fff;
+        border-radius: 4px;
+        padding: 20px;
+        transition: all 0.2s;
+        text-align: center;
+      }
+      #change_res {
         border-radius: 4px;
         padding: 20px;
         transition: all 0.2s;
