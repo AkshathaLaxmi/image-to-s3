@@ -9,7 +9,8 @@ Uploads images(jpg) to S3 bucket and generates link to it. Also has an image res
 `https://s3upload-frontend.s3.us-east-2.amazonaws.com/change.html`
 
 ## Basic Uploader
-![image-uploader](https://user-images.githubusercontent.com/47936078/123515581-97d9f380-d6b5-11eb-934b-f6908df4c849.png)
+![image-uploader](https://user-images.githubusercontent.com/47936078/123584357-dcbd7180-d7fe-11eb-97c6-319e95976f24.png)
+
 
 ### Design
 ![initial-image-to-s3-2x](https://user-images.githubusercontent.com/47936078/123515597-ab855a00-d6b5-11eb-9e0f-92890b05ddfc.png)
@@ -27,7 +28,8 @@ Step - 4:
     The Vue application uploads the image to S3 bucket through the link received.
 
 ## Image Resizer
-![image-resizer](https://user-images.githubusercontent.com/47936078/123515655-e2f40680-d6b5-11eb-8ce6-c55b0d558138.png)
+![image-resizer](https://user-images.githubusercontent.com/47936078/123584385-e6df7000-d7fe-11eb-9c9c-8a74a595728f.png)
+
 
 ### Design
 ![final-image-to-s3](https://user-images.githubusercontent.com/47936078/123515666-ec7d6e80-d6b5-11eb-8475-60be26617eaf.png)
